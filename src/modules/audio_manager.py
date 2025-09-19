@@ -49,7 +49,13 @@ class AudioManager:
         self.muted = False
         self.sample_rate = 44100
         self.channels = 2
-        self.chunk_size = 1024
+        self.chunk_size = 512  # Reduced chunk size for better sync
+        
+        # Timing and synchronization variables
+        self.playback_start_time = 0.0
+        self.playback_start_real_time = 0.0
+        self.current_position = 0.0
+        self.audio_duration = 0.0
         
         # Initialize PyAudio if available
         if self.audio_available:
@@ -79,14 +85,31 @@ class AudioManager:
             print(f"Video file not found: {video_path}")
             return None
         
+        # Check file extension for supported formats
+        supported_extensions = ['.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm']
+        file_ext = os.path.splitext(video_path)[1].lower()
+        if file_ext not in supported_extensions:
+            print(f"Unsupported video format: {file_ext}")
+            print(f"Supported formats: {', '.join(supported_extensions)}")
+            return None
+        
         video_clip = None
+        audio_path = None
         try:
             # Create temporary file for audio
             temp_dir = tempfile.gettempdir()
             audio_filename = f"audio_{int(time.time())}.wav"
             audio_path = os.path.join(temp_dir, audio_filename)
             
-            # Extract audio using MoviePy
+            # Clean up any existing audio file
+            if os.path.exists(audio_path):
+                try:
+                    os.remove(audio_path)
+                except:
+                    pass
+            
+            # Extract audio using MoviePy with format-specific handling
+            print(f"Extracting audio from {file_ext} file...")
             video_clip = VideoFileClip(video_path)
             
             # Check if video has audio
@@ -94,28 +117,55 @@ class AudioManager:
                 print("Video file has no audio track.")
                 return None
             
+            # Get audio properties
+            audio_duration = video_clip.audio.duration
+            audio_fps = video_clip.audio.fps if hasattr(video_clip.audio, 'fps') else 44100
+            
+            print(f"Audio properties: duration={audio_duration:.2f}s, fps={audio_fps}")
+            
+            # Extract audio with format-specific parameters
+            if file_ext == '.mp4':
+                # MP4 files often have better audio quality
+                bitrate = '256k'
+            elif file_ext == '.avi':
+                # AVI files may have lower quality audio
+                bitrate = '192k'
+            elif file_ext == '.mov':
+                # MOV files (QuickTime) usually have good audio
+                bitrate = '256k'
+            else:
+                # Default bitrate for other formats
+                bitrate = '192k'
+            
             # Extract audio and save as WAV
             video_clip.audio.write_audiofile(
                 audio_path,
-                fps=self.sample_rate,
+                fps=audio_fps,
                 nbytes=2,  # 16-bit
                 codec='pcm_s16le',
                 verbose=False,
-                logger=None
+                logger=None,
+                bitrate=bitrate
             )
             
-            # Verify the audio file was created
+            # Verify the audio file was created and has content
             if not os.path.exists(audio_path):
                 print("Failed to create audio file.")
                 return None
             
-            print(f"Audio extracted to: {audio_path}")
+            # Check file size
+            file_size = os.path.getsize(audio_path)
+            if file_size < 1024:  # Less than 1KB
+                print(f"Audio file too small: {file_size} bytes")
+                return None
+            
+            print(f"Audio extracted successfully: {audio_path} ({file_size} bytes)")
             return audio_path
             
         except Exception as e:
             print(f"Error extracting audio: {e}")
             # Clean up any partially created audio file
-            if 'audio_path' in locals() and os.path.exists(audio_path):
+            if audio_path and os.path.exists(audio_path):
                 try:
                     os.remove(audio_path)
                 except:
@@ -152,7 +202,21 @@ class AudioManager:
         self.stop_audio()
         
         self.current_audio_path = audio_path
-        self.is_playing = True
+        self.playback_start_time = start_time
+        self.playback_start_real_time = time.time()
+        self.current_position = start_time
+        
+        # Get audio duration for better timing
+        try:
+            with wave.open(audio_path, 'rb') as wav_file:
+                total_frames = wav_file.getnframes()
+                sample_rate = wav_file.getframerate()
+                self.audio_duration = total_frames / sample_rate if sample_rate > 0 else 0.0
+        except Exception as e:
+            print(f"Warning: Could not get audio duration: {e}")
+            self.audio_duration = 0.0
+        
+        print(f"Starting audio playback at {start_time:.3f}s (duration: {self.audio_duration:.3f}s)")
         
         # Start audio playback in separate thread
         self.audio_thread = threading.Thread(
@@ -183,6 +247,13 @@ class AudioManager:
             
             # Calculate start position
             start_frame = int(start_time * sample_rate)
+            total_frames = wav_file.getnframes()
+            
+            # Validate start position
+            if start_frame >= total_frames:
+                print(f"Start time {start_time}s is beyond audio duration")
+                return
+            
             wav_file.setpos(start_frame)
             
             # Open audio stream
@@ -194,11 +265,19 @@ class AudioManager:
                 frames_per_buffer=chunk_size
             )
             
+            self.is_playing = True
+            print(f"Audio playback started at {start_time:.3f}s")
+            
             # Read and play audio data
+            frames_played = 0
             while self.is_playing:
                 data = wav_file.readframes(chunk_size)
                 if not data:
                     break  # End of file
+                
+                # Update current position
+                frames_played += len(data) // (wav_file.getsampwidth() * channels)
+                self.current_position = start_time + (frames_played / sample_rate)
                 
                 # Apply volume control
                 if not self.muted and self.volume < 1.0:
@@ -209,6 +288,8 @@ class AudioManager:
                 
                 # Play the chunk
                 self.audio_stream.write(data)
+            
+            print(f"Audio playback completed at {self.current_position:.3f}s")
             
         except Exception as e:
             print(f"Error in audio playback thread: {e}")
@@ -233,10 +314,33 @@ class AudioManager:
     
     def stop_audio(self):
         """Stop audio playback."""
-        self.is_playing = False
+        if self.is_playing:
+            self.is_playing = False
+            print(f"Audio playback stopped at {self.current_position:.3f}s")
+        
         if self.audio_thread and self.audio_thread.is_alive():
-            self.audio_thread.join(timeout=1.0)
+            self.audio_thread.join(timeout=2.0)  # Increased timeout
         self.audio_thread = None
+        
+        # Reset timing variables
+        self.playback_start_time = 0.0
+        self.playback_start_real_time = 0.0
+        self.current_position = 0.0
+    
+    def get_current_position(self) -> float:
+        """
+        Get current audio playback position.
+        
+        Returns:
+            Current position in seconds
+        """
+        if self.is_playing and self.current_position > 0:
+            return self.current_position
+        elif self.playback_start_time > 0:
+            # If not playing but we have start time, return the start position
+            return self.playback_start_time
+        else:
+            return 0.0
     
     def set_volume(self, volume: float):
         """

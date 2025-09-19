@@ -52,7 +52,10 @@ class VideoThread(QThread):
     def set_video_source(self, source):
         # Stop any existing audio playback
         if hasattr(self, 'audio_manager'):
-            self.audio_manager.stop_audio()
+            try:
+                self.audio_manager.stop_audio()
+            except Exception as e:
+                print(f"Error stopping audio: {e}")
         
         # Use the new video processor
         if self.video_processor.capture.open(source):
@@ -62,14 +65,19 @@ class VideoThread(QThread):
             self.cap = self.video_processor.capture.cap  # Legacy compatibility
             self.current_video_path = source
             self.start_time = time.time()
+            self.video_start_time = 0.0  # Track when video started playing
+            self.audio_start_time = 0.0  # Track when audio should start
             
             # Extract audio from video
             if hasattr(self, 'audio_manager'):
-                audio_path = self.audio_manager.extract_audio_from_video(source)
-                if audio_path:
-                    print(f"Audio extracted successfully")
-                else:
-                    print("No audio found or audio extraction failed")
+                try:
+                    audio_path = self.audio_manager.extract_audio_from_video(source)
+                    if audio_path:
+                        print(f"Audio extracted successfully: {audio_path}")
+                    else:
+                        print("No audio found or audio extraction failed")
+                except Exception as e:
+                    print(f"Error extracting audio: {e}")
         else:
             print(f"Failed to open video source: {source}")
             self.cap = None
@@ -92,12 +100,14 @@ class VideoThread(QThread):
     def run(self):
         self.running = True
         try:
-            # Start audio playback when video starts
-            if hasattr(self, 'audio_manager') and self.current_video_path:
-                audio_info = self.audio_manager.get_audio_info(self.current_video_path)
-                if audio_info and audio_info['has_audio']:
-                    # Start audio playback from beginning
-                    self.audio_manager.play_audio(self.audio_manager.current_audio_path, 0.0)
+            # Get video FPS for timing calculations
+            fps = self.video_info.fps if hasattr(self, 'video_info') and self.video_info else 30.0
+            frame_delay = 1.0 / fps if fps > 0 else 1.0 / 30.0
+            
+            # Initialize audio timing
+            audio_started = False
+            video_start_time = None
+            audio_start_offset = 0.0
             
             while self.running and self.cap and self.cap.isOpened():
                 ret, frame = self.cap.read()
@@ -108,6 +118,45 @@ class VideoThread(QThread):
                 if self.total_frames > 0:
                     progress = int((self.current_frame / self.total_frames) * 100)
                     self.progress_updated.emit(progress)
+                
+                # Calculate current video time
+                current_video_time = (self.current_frame - 1) / fps
+                
+                # Start audio playback when video starts
+                if not audio_started and hasattr(self, 'audio_manager') and self.current_video_path:
+                    audio_info = self.audio_manager.get_audio_info(self.current_video_path)
+                    if audio_info and audio_info['has_audio']:
+                        # Start audio playback from beginning
+                        if self.audio_manager.play_audio(self.audio_manager.current_audio_path, 0.0):
+                            audio_started = True
+                            video_start_time = time.time()
+                            print(f"Audio started at video time: {current_video_time:.3f}s")
+                
+                # Synchronize audio with video position
+                if audio_started and hasattr(self, 'audio_manager') and self.audio_manager.is_playing:
+                    # Get current audio position
+                    current_audio_pos = self.audio_manager.get_current_position()
+                    
+                    # Calculate expected audio position based on video time
+                    expected_audio_pos = current_video_time
+                    
+                    # If audio is out of sync by more than 0.5 seconds, restart it
+                    sync_threshold = 0.5  # Reduced threshold for better precision
+                    sync_diff = abs(expected_audio_pos - current_audio_pos)
+                    
+                    if sync_diff > sync_threshold:
+                        print(f"Audio sync issue: video={expected_audio_pos:.2f}s, audio={current_audio_pos:.2f}s, diff={sync_diff:.2f}s")
+                        
+                        # Stop current audio playback
+                        self.audio_manager.stop_audio()
+                        
+                        # Restart audio from the correct position
+                        if self.audio_manager.play_audio(self.audio_manager.current_audio_path, expected_audio_pos):
+                            print(f"Audio resynchronized at: {expected_audio_pos:.2f}s")
+                            audio_started = True
+                        else:
+                            print("Failed to restart audio playback")
+                            audio_started = False
                     
                 if self.analyze:
                     try:
@@ -142,7 +191,7 @@ class VideoThread(QThread):
                         continue
                 
                 self.frame_ready.emit(frame)
-                time.sleep(config.frame_delay)  # Use configured frame delay
+                time.sleep(frame_delay)  # Use calculated frame delay for better sync
         except Exception as e:
             print(f"Video thread error: {e}")
         finally:
@@ -153,11 +202,20 @@ class VideoThread(QThread):
             
     def stop(self):
         self.running = False
-        # Stop audio playback
+        
+        # Stop audio playback with error handling
         if hasattr(self, 'audio_manager'):
-            self.audio_manager.stop_audio()
+            try:
+                self.audio_manager.stop_audio()
+            except Exception as e:
+                print(f"Error stopping audio: {e}")
+        
         # Use the new video processor
-        self.video_processor.capture.close()
+        try:
+            self.video_processor.capture.close()
+        except Exception as e:
+            print(f"Error closing video processor: {e}")
+        
         self.cap = None  # Legacy compatibility
         self.wait()  # Wait for thread to finish
 
@@ -299,7 +357,7 @@ class VideoPlayer(QMainWindow):
         file_dialog = QFileDialog()
         video_path, _ = file_dialog.getOpenFileName(
             self, "Open Video File", "", 
-            "Video Files (*.mp4 *.avi *.mov *.mkv *.flv)"
+            "Video Files (*.mp4 *.avi *.mov *.mkv *.flv *.wmv *.webm);;All Files (*)"
         )
         
         if video_path:
@@ -310,31 +368,43 @@ class VideoPlayer(QMainWindow):
             
             # Check if video has audio and enable audio controls
             if hasattr(self.video_thread, 'audio_manager'):
-                audio_info = self.video_thread.audio_manager.get_audio_info(video_path)
-                has_audio = audio_info and audio_info.get('has_audio', False)
-                self.mute_btn.setEnabled(has_audio)
-                self.volume_slider.setEnabled(has_audio)
-                
-                if has_audio:
-                    print(f"Video has audio: {audio_info['duration']:.2f}s")
-                else:
-                    print("Video has no audio track")
+                try:
+                    audio_info = self.video_thread.audio_manager.get_audio_info(video_path)
+                    has_audio = audio_info and audio_info.get('has_audio', False)
+                    self.mute_btn.setEnabled(has_audio)
+                    self.volume_slider.setEnabled(has_audio)
+                    
+                    if has_audio:
+                        print(f"Video has audio: {audio_info['duration']:.2f}s, "
+                              f"sample_rate: {audio_info.get('sample_rate', 'unknown')}Hz, "
+                              f"channels: {audio_info.get('nchannels', 'unknown')}")
+                    else:
+                        print("Video has no audio track")
+                except Exception as e:
+                    print(f"Error checking audio info: {e}")
+                    # Disable audio controls on error
+                    self.mute_btn.setEnabled(False)
+                    self.volume_slider.setEnabled(False)
             
             # Get video information
-            cap = cv2.VideoCapture(video_path)
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            duration = frame_count / fps if fps > 0 else 0
-            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            cap.release()
-            
-            info_text = f"Resolution: {width}x{height}\n"
-            info_text += f"FPS: {fps:.2f}\n"
-            info_text += f"Duration: {duration:.2f} seconds\n"
-            info_text += f"Total Frames: {frame_count}"
-            
-            self.video_info_text.setText(info_text)
+            try:
+                cap = cv2.VideoCapture(video_path)
+                fps = cap.get(cv2.CAP_PROP_FPS)
+                frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                duration = frame_count / fps if fps > 0 else 0
+                width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                cap.release()
+                
+                info_text = f"Resolution: {width}x{height}\n"
+                info_text += f"FPS: {fps:.2f}\n"
+                info_text += f"Duration: {duration:.2f} seconds\n"
+                info_text += f"Total Frames: {frame_count}"
+                
+                self.video_info_text.setText(info_text)
+            except Exception as e:
+                print(f"Error getting video info: {e}")
+                self.video_info_text.setText("Error loading video information")
             
     def play_video(self):
         if not self.video_thread.isRunning():
@@ -364,14 +434,20 @@ class VideoPlayer(QMainWindow):
         
     def toggle_mute(self):
         if hasattr(self.video_thread, 'audio_manager'):
-            muted = self.video_thread.audio_manager.toggle_mute()
-            # Update mute button icon
-            self.mute_btn.setText("🔇" if muted else "🔊")
+            try:
+                muted = self.video_thread.audio_manager.toggle_mute()
+                # Update mute button icon
+                self.mute_btn.setText("🔇" if muted else "🔊")
+            except Exception as e:
+                print(f"Error toggling mute: {e}")
     
     def update_volume(self, value):
         if hasattr(self.video_thread, 'audio_manager'):
-            volume = value / 100.0  # Convert to 0.0-1.0 range
-            self.video_thread.audio_manager.set_volume(volume)
+            try:
+                volume = value / 100.0  # Convert to 0.0-1.0 range
+                self.video_thread.audio_manager.set_volume(volume)
+            except Exception as e:
+                print(f"Error updating volume: {e}")
         
     def update_progress(self, value):
         self.progress_bar.setValue(value)

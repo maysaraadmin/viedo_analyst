@@ -936,6 +936,20 @@ class VideoAnalysisGUI(QMainWindow):
         if self.audio_manager:
             self.audio_manager.set_volume(volume)
         self.volume_label.setText(f"{value}%")
+    
+    def toggle_mute(self):
+        """Toggle audio mute state."""
+        if self.audio_manager and self.audio_manager.audio_available:
+            muted = self.audio_manager.toggle_mute()
+            # Update mute button icon
+            self.mute_btn.setText("🔇" if muted else "🔊")
+            # Update status
+            if muted:
+                self.status_bar.showMessage("Audio muted")
+            else:
+                self.status_bar.showMessage("Audio unmuted")
+        else:
+            self.status_bar.showMessage("Audio not available")
         
     def start_audio_playback(self, start_time=0.0):
         """Start audio playback synchronized with video."""
