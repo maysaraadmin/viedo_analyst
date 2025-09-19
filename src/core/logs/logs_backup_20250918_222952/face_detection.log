@@ -1,0 +1,15 @@
+2025-09-18 22:25:24,469 - face_detection - DEBUG - test_basic_logging:47 - Face detection initialized
+2025-09-18 22:25:24,469 - face_detection - DEBUG - test_basic_logging:48 - Detected 3 faces in frame 50
+2025-09-18 22:25:24,469 - face_detection - INFO - test_basic_logging:49 - Face detection completed
+2025-09-18 22:25:24,477 - face_detection - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:25:24.476961", "level": "DEBUG", "message": "Face detection: detection_start", "event_type": "detection_start", "frame_number": 100, "model": "yolov8n", "confidence_threshold": 0.5}
+2025-09-18 22:25:24,477 - face_detection - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:25:24.477128", "level": "DEBUG", "message": "Face detection: faces_detected", "event_type": "faces_detected", "frame_number": 100, "count": 3, "confidence_scores": [0.89, 0.92, 0.85]}
+2025-09-18 22:27:05,355 - face_detection - DEBUG - test_basic_logging:47 - Face detection initialized
+2025-09-18 22:27:05,355 - face_detection - DEBUG - test_basic_logging:48 - Detected 3 faces in frame 50
+2025-09-18 22:27:05,355 - face_detection - INFO - test_basic_logging:49 - Face detection completed
+2025-09-18 22:27:05,358 - face_detection - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:27:05.358176", "level": "DEBUG", "message": "Face detection: detection_start", "event_type": "detection_start", "frame_number": 100, "model": "yolov8n", "confidence_threshold": 0.5}
+2025-09-18 22:27:05,358 - face_detection - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:27:05.358266", "level": "DEBUG", "message": "Face detection: faces_detected", "event_type": "faces_detected", "frame_number": 100, "count": 3, "confidence_scores": [0.89, 0.92, 0.85]}
+2025-09-18 22:29:50,487 - face_detection - DEBUG - test_basic_logging:47 - Face detection initialized
+2025-09-18 22:29:50,487 - face_detection - DEBUG - test_basic_logging:48 - Detected 3 faces in frame 50
+2025-09-18 22:29:50,487 - face_detection - INFO - test_basic_logging:49 - Face detection completed
+2025-09-18 22:29:50,491 - face_detection - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:29:50.491601", "level": "DEBUG", "message": "Face detection: detection_start", "event_type": "detection_start", "frame_number": 100, "model": "yolov8n", "confidence_threshold": 0.5}
+2025-09-18 22:29:50,492 - face_detection - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:29:50.492160", "level": "DEBUG", "message": "Face detection: faces_detected", "event_type": "faces_detected", "frame_number": 100, "count": 3, "confidence_scores": [0.89, 0.92, 0.85]}

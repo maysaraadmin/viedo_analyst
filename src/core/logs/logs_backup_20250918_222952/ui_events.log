@@ -1,0 +1,12 @@
+2025-09-18 22:25:24,470 - ui_events - DEBUG - test_basic_logging:54 - Button clicked: Open Video
+2025-09-18 22:25:24,470 - ui_events - DEBUG - test_basic_logging:55 - Menu selected: File > Exit
+2025-09-18 22:25:24,475 - ui_events - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:25:24.475626", "level": "DEBUG", "message": "UI event: button_click", "event_type": "button_click", "component": "main_window", "button_id": "open_video"}
+2025-09-18 22:25:24,475 - ui_events - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:25:24.475880", "level": "DEBUG", "message": "UI event: menu_select", "event_type": "menu_select", "component": "main_menu", "menu_item": "file_exit", "user_action": "click"}
+2025-09-18 22:27:05,355 - ui_events - DEBUG - test_basic_logging:54 - Button clicked: Open Video
+2025-09-18 22:27:05,356 - ui_events - DEBUG - test_basic_logging:55 - Menu selected: File > Exit
+2025-09-18 22:27:05,357 - ui_events - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:27:05.357574", "level": "DEBUG", "message": "UI event: button_click", "event_type": "button_click", "component": "main_window", "button_id": "open_video"}
+2025-09-18 22:27:05,357 - ui_events - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:27:05.357682", "level": "DEBUG", "message": "UI event: menu_select", "event_type": "menu_select", "component": "main_menu", "menu_item": "file_exit", "user_action": "click"}
+2025-09-18 22:29:50,488 - ui_events - DEBUG - test_basic_logging:54 - Button clicked: Open Video
+2025-09-18 22:29:50,488 - ui_events - DEBUG - test_basic_logging:55 - Menu selected: File > Exit
+2025-09-18 22:29:50,489 - ui_events - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:29:50.489914", "level": "DEBUG", "message": "UI event: button_click", "event_type": "button_click", "component": "main_window", "button_id": "open_video"}
+2025-09-18 22:29:50,490 - ui_events - DEBUG - log_structured:119 - {"timestamp": "2025-09-18T22:29:50.490153", "level": "DEBUG", "message": "UI event: menu_select", "event_type": "menu_select", "component": "main_menu", "menu_item": "file_exit", "user_action": "click"}

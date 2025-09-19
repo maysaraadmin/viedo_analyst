@@ -1,0 +1,6 @@
+PyQt5
+moviepy
+opencv-python
+ultralytics
+numpy
+pyaudio

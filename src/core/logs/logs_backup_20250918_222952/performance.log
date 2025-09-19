@@ -1,0 +1,15 @@
+2025-09-18 22:25:24,470 - performance - INFO - test_basic_logging:57 - Performance metric: video_load
+2025-09-18 22:25:24,470 - performance - INFO - test_basic_logging:58 - Performance metric: face_detection
+2025-09-18 22:25:24,471 - performance - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:25:24.471075", "level": "INFO", "message": "Performance metric: video_load", "operation": "video_load", "duration_ms": 1230.0, "video_path": "test.mp4", "resolution": "1920x1080"}
+2025-09-18 22:25:24,472 - performance - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:25:24.472014", "level": "INFO", "message": "Performance metric: face_detection", "operation": "face_detection", "duration_ms": 450.0, "frame_number": 100, "faces_detected": 3}
+2025-09-18 22:25:24,475 - performance - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:25:24.475405", "level": "INFO", "message": "Performance metric: database_query", "operation": "database_query", "duration_ms": 120.0, "query_type": "SELECT", "rows_returned": 5}
+2025-09-18 22:27:05,356 - performance - INFO - test_basic_logging:57 - Performance metric: video_load
+2025-09-18 22:27:05,356 - performance - INFO - test_basic_logging:58 - Performance metric: face_detection
+2025-09-18 22:27:05,357 - performance - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:27:05.357056", "level": "INFO", "message": "Performance metric: video_load", "operation": "video_load", "duration_ms": 1230.0, "video_path": "test.mp4", "resolution": "1920x1080"}
+2025-09-18 22:27:05,357 - performance - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:27:05.357346", "level": "INFO", "message": "Performance metric: face_detection", "operation": "face_detection", "duration_ms": 450.0, "frame_number": 100, "faces_detected": 3}
+2025-09-18 22:27:05,357 - performance - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:27:05.357480", "level": "INFO", "message": "Performance metric: database_query", "operation": "database_query", "duration_ms": 120.0, "query_type": "SELECT", "rows_returned": 5}
+2025-09-18 22:29:50,488 - performance - INFO - test_basic_logging:57 - Performance metric: video_load
+2025-09-18 22:29:50,488 - performance - INFO - test_basic_logging:58 - Performance metric: face_detection
+2025-09-18 22:29:50,489 - performance - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:29:50.488913", "level": "INFO", "message": "Performance metric: video_load", "operation": "video_load", "duration_ms": 1230.0, "video_path": "test.mp4", "resolution": "1920x1080"}
+2025-09-18 22:29:50,489 - performance - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:29:50.489228", "level": "INFO", "message": "Performance metric: face_detection", "operation": "face_detection", "duration_ms": 450.0, "frame_number": 100, "faces_detected": 3}
+2025-09-18 22:29:50,489 - performance - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:29:50.489615", "level": "INFO", "message": "Performance metric: database_query", "operation": "database_query", "duration_ms": 120.0, "query_type": "SELECT", "rows_returned": 5}

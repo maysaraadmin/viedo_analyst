@@ -1,0 +1,12 @@
+2025-09-18 22:25:24,468 - video_processing - INFO - test_basic_logging:43 - Video processing started
+2025-09-18 22:25:24,468 - video_processing - INFO - test_basic_logging:45 - Video processing completed
+2025-09-18 22:25:24,476 - video_processing - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:25:24.476362", "level": "INFO", "message": "Video processing: start", "event_type": "start", "video_path": "test.mp4", "duration": 120, "fps": 30}
+2025-09-18 22:25:24,476 - video_processing - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:25:24.476464", "level": "INFO", "message": "Video processing: frame_processed", "event_type": "frame_processed", "video_path": "test.mp4", "frame_number": 100, "processing_time": 0.033}
+2025-09-18 22:27:05,354 - video_processing - INFO - test_basic_logging:43 - Video processing started
+2025-09-18 22:27:05,354 - video_processing - INFO - test_basic_logging:45 - Video processing completed
+2025-09-18 22:27:05,358 - video_processing - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:27:05.357986", "level": "INFO", "message": "Video processing: start", "event_type": "start", "video_path": "test.mp4", "duration": 120, "fps": 30}
+2025-09-18 22:27:05,358 - video_processing - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:27:05.358081", "level": "INFO", "message": "Video processing: frame_processed", "event_type": "frame_processed", "video_path": "test.mp4", "frame_number": 100, "processing_time": 0.033}
+2025-09-18 22:29:50,486 - video_processing - INFO - test_basic_logging:43 - Video processing started
+2025-09-18 22:29:50,486 - video_processing - INFO - test_basic_logging:45 - Video processing completed
+2025-09-18 22:29:50,491 - video_processing - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:29:50.491061", "level": "INFO", "message": "Video processing: start", "event_type": "start", "video_path": "test.mp4", "duration": 120, "fps": 30}
+2025-09-18 22:29:50,491 - video_processing - INFO - log_structured:121 - {"timestamp": "2025-09-18T22:29:50.491295", "level": "INFO", "message": "Video processing: frame_processed", "event_type": "frame_processed", "video_path": "test.mp4", "frame_number": 100, "processing_time": 0.033}
