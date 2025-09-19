@@ -17,6 +17,7 @@ from modules.database import create_database_manager
 from modules.video_processing import VideoProcessor
 from modules.object_detection import create_detector
 from modules.tracking import create_person_tracker
+from modules.audio_manager import create_audio_manager
 from PyQt5.QtWidgets import QApplication
 
 
@@ -101,12 +102,17 @@ def initialize_components():
         logger.info("Initializing person tracker...")
         tracker = create_person_tracker()
         
+        # Initialize audio manager
+        logger.info("Initializing audio manager...")
+        audio_manager = create_audio_manager()
+        
         logger.info("All components initialized successfully")
         return {
             'db_manager': db_manager,
             'video_processor': video_processor,
             'detector': detector,
-            'tracker': tracker
+            'tracker': tracker,
+            'audio_manager': audio_manager
         }
         
     except Exception as e:
@@ -199,6 +205,12 @@ def main():
                 logger.debug("Video processor released")
             except Exception as e:
                 logger.error(f"Error releasing video processor: {e}")
+            
+            try:
+                components['audio_manager'].cleanup()
+                logger.debug("Audio manager cleaned up")
+            except Exception as e:
+                logger.error(f"Error cleaning up audio manager: {e}")
         
         logger.info("Application shutdown complete")
 

@@ -14,11 +14,19 @@ import cv2
 
 try:
     import pyaudio
-    import wave
-    AUDIO_AVAILABLE = True
+    PYAUDIO_AVAILABLE = True
 except ImportError:
-    AUDIO_AVAILABLE = False
+    PYAUDIO_AVAILABLE = False
     print("Warning: PyAudio not available. Audio playback will be disabled.")
+
+try:
+    import wave
+    WAVE_AVAILABLE = True
+except ImportError:
+    WAVE_AVAILABLE = False
+    print("Warning: Wave module not available. Audio playback will be disabled.")
+
+AUDIO_AVAILABLE = PYAUDIO_AVAILABLE and WAVE_AVAILABLE
 
 try:
     from moviepy.editor import VideoFileClip
@@ -66,6 +74,12 @@ class AudioManager:
             print("MoviePy not available. Cannot extract audio.")
             return None
         
+        # Validate video file exists
+        if not os.path.exists(video_path):
+            print(f"Video file not found: {video_path}")
+            return None
+        
+        video_clip = None
         try:
             # Create temporary file for audio
             temp_dir = tempfile.gettempdir()
@@ -90,14 +104,30 @@ class AudioManager:
                 logger=None
             )
             
-            video_clip.close()
+            # Verify the audio file was created
+            if not os.path.exists(audio_path):
+                print("Failed to create audio file.")
+                return None
             
             print(f"Audio extracted to: {audio_path}")
             return audio_path
             
         except Exception as e:
             print(f"Error extracting audio: {e}")
+            # Clean up any partially created audio file
+            if 'audio_path' in locals() and os.path.exists(audio_path):
+                try:
+                    os.remove(audio_path)
+                except:
+                    pass
             return None
+        finally:
+            # Always close the video clip
+            if video_clip:
+                try:
+                    video_clip.close()
+                except:
+                    pass
     
     def play_audio(self, audio_path: str, start_time: float = 0.0) -> bool:
         """
@@ -136,52 +166,69 @@ class AudioManager:
     
     def _play_audio_thread(self, start_time: float):
         """Thread function for audio playback."""
+        wav_file = None
         try:
+            # Check if audio file exists
+            if not os.path.exists(self.current_audio_path):
+                print(f"Audio file not found: {self.current_audio_path}")
+                return
+            
             # Open the WAV file
-            with wave.open(self.current_audio_path, 'rb') as wav_file:
-                # Get audio properties
-                sample_rate = wav_file.getframerate()
-                channels = wav_file.getnchannels()
-                chunk_size = self.chunk_size
+            wav_file = wave.open(self.current_audio_path, 'rb')
+            
+            # Get audio properties
+            sample_rate = wav_file.getframerate()
+            channels = wav_file.getnchannels()
+            chunk_size = self.chunk_size
+            
+            # Calculate start position
+            start_frame = int(start_time * sample_rate)
+            wav_file.setpos(start_frame)
+            
+            # Open audio stream
+            self.audio_stream = self.pyaudio.open(
+                format=self.pyaudio.get_format_from_width(wav_file.getsampwidth()),
+                channels=channels,
+                rate=sample_rate,
+                output=True,
+                frames_per_buffer=chunk_size
+            )
+            
+            # Read and play audio data
+            while self.is_playing:
+                data = wav_file.readframes(chunk_size)
+                if not data:
+                    break  # End of file
                 
-                # Calculate start position
-                start_frame = int(start_time * sample_rate)
-                wav_file.setpos(start_frame)
+                # Apply volume control
+                if not self.muted and self.volume < 1.0:
+                    # Convert bytes to numpy array, apply volume, convert back
+                    audio_array = np.frombuffer(data, dtype=np.int16)
+                    audio_array = (audio_array * self.volume).astype(np.int16)
+                    data = audio_array.tobytes()
                 
-                # Open audio stream
-                self.audio_stream = self.pyaudio.open(
-                    format=self.pyaudio.get_format_from_width(wav_file.getsampwidth()),
-                    channels=channels,
-                    rate=sample_rate,
-                    output=True,
-                    frames_per_buffer=chunk_size
-                )
-                
-                # Read and play audio data
-                while self.is_playing:
-                    data = wav_file.readframes(chunk_size)
-                    if not data:
-                        break  # End of file
-                    
-                    # Apply volume control
-                    if not self.muted and self.volume < 1.0:
-                        # Convert bytes to numpy array, apply volume, convert back
-                        audio_array = np.frombuffer(data, dtype=np.int16)
-                        audio_array = (audio_array * self.volume).astype(np.int16)
-                        data = audio_array.tobytes()
-                    
-                    # Play the chunk
-                    self.audio_stream.write(data)
-                
-                # Clean up
-                if self.audio_stream:
-                    self.audio_stream.stop_stream()
-                    self.audio_stream.close()
-                    self.audio_stream = None
-                    
+                # Play the chunk
+                self.audio_stream.write(data)
+            
         except Exception as e:
             print(f"Error in audio playback thread: {e}")
         finally:
+            # Clean up
+            if wav_file:
+                try:
+                    wav_file.close()
+                except:
+                    pass
+            
+            if self.audio_stream:
+                try:
+                    self.audio_stream.stop_stream()
+                    self.audio_stream.close()
+                except:
+                    pass
+                finally:
+                    self.audio_stream = None
+            
             self.is_playing = False
     
     def stop_audio(self):
@@ -242,15 +289,25 @@ class AudioManager:
     def cleanup(self):
         """Clean up resources."""
         self.stop_audio()
-        if hasattr(self, 'pyaudio'):
-            self.pyaudio.terminate()
+        
+        # Terminate PyAudio if available
+        if hasattr(self, 'pyaudio') and self.pyaudio is not None:
+            try:
+                self.pyaudio.terminate()
+            except Exception as e:
+                print(f"Error terminating PyAudio: {e}")
         
         # Clean up temporary audio files
         if self.current_audio_path and os.path.exists(self.current_audio_path):
             try:
                 os.remove(self.current_audio_path)
-            except:
-                pass
+                print(f"Cleaned up temporary audio file: {self.current_audio_path}")
+            except Exception as e:
+                print(f"Error cleaning up audio file: {e}")
+        
+        # Reset state
+        self.current_audio_path = None
+        self.audio_available = False
 
 
 def create_audio_manager() -> AudioManager:
