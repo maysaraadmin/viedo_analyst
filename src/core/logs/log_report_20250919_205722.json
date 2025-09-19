@@ -1,0 +1,166 @@
+{
+  "generated_at": "2025-09-19T20:57:22.182975",
+  "summary": {
+    "log_directory": "D:\\viedo_analyst\\src\\core\\logs",
+    "total_files": 7,
+    "total_size_mb": 0.0,
+    "files": [
+      {
+        "name": "database.log",
+        "path": "D:\\viedo_analyst\\src\\core\\logs\\database.log",
+        "size_bytes": 0,
+        "size_mb": 0.0,
+        "last_modified": "2025-09-19T20:57:22.168287",
+        "is_compressed": false
+      },
+      {
+        "name": "errors.log",
+        "path": "D:\\viedo_analyst\\src\\core\\logs\\errors.log",
+        "size_bytes": 0,
+        "size_mb": 0.0,
+        "last_modified": "2025-09-19T20:57:22.173278",
+        "is_compressed": false
+      },
+      {
+        "name": "face_detection.log",
+        "path": "D:\\viedo_analyst\\src\\core\\logs\\face_detection.log",
+        "size_bytes": 0,
+        "size_mb": 0.0,
+        "last_modified": "2025-09-19T20:57:22.166850",
+        "is_compressed": false
+      },
+      {
+        "name": "performance.log",
+        "path": "D:\\viedo_analyst\\src\\core\\logs\\performance.log",
+        "size_bytes": 0,
+        "size_mb": 0.0,
+        "last_modified": "2025-09-19T20:57:22.171207",
+        "is_compressed": false
+      },
+      {
+        "name": "ui_events.log",
+        "path": "D:\\viedo_analyst\\src\\core\\logs\\ui_events.log",
+        "size_bytes": 0,
+        "size_mb": 0.0,
+        "last_modified": "2025-09-19T20:57:22.170201",
+        "is_compressed": false
+      },
+      {
+        "name": "video_analysis.log",
+        "path": "D:\\viedo_analyst\\src\\core\\logs\\video_analysis.log",
+        "size_bytes": 288,
+        "size_mb": 0.0,
+        "last_modified": "2025-09-19T20:57:22.182449",
+        "is_compressed": false
+      },
+      {
+        "name": "video_processing.log",
+        "path": "D:\\viedo_analyst\\src\\core\\logs\\video_processing.log",
+        "size_bytes": 0,
+        "size_mb": 0.0,
+        "last_modified": "2025-09-19T20:57:22.164841",
+        "is_compressed": false
+      }
+    ]
+  },
+  "file_analyses": {
+    "database.log": {
+      "file_path": "D:\\viedo_analyst\\src\\core\\logs\\database.log",
+      "total_lines": 0,
+      "error_count": 0,
+      "warning_count": 0,
+      "info_count": 0,
+      "debug_count": 0,
+      "critical_count": 0,
+      "date_range": {
+        "start": null,
+        "end": null
+      },
+      "recent_errors": []
+    },
+    "errors.log": {
+      "file_path": "D:\\viedo_analyst\\src\\core\\logs\\errors.log",
+      "total_lines": 0,
+      "error_count": 0,
+      "warning_count": 0,
+      "info_count": 0,
+      "debug_count": 0,
+      "critical_count": 0,
+      "date_range": {
+        "start": null,
+        "end": null
+      },
+      "recent_errors": []
+    },
+    "face_detection.log": {
+      "file_path": "D:\\viedo_analyst\\src\\core\\logs\\face_detection.log",
+      "total_lines": 0,
+      "error_count": 0,
+      "warning_count": 0,
+      "info_count": 0,
+      "debug_count": 0,
+      "critical_count": 0,
+      "date_range": {
+        "start": null,
+        "end": null
+      },
+      "recent_errors": []
+    },
+    "performance.log": {
+      "file_path": "D:\\viedo_analyst\\src\\core\\logs\\performance.log",
+      "total_lines": 0,
+      "error_count": 0,
+      "warning_count": 0,
+      "info_count": 0,
+      "debug_count": 0,
+      "critical_count": 0,
+      "date_range": {
+        "start": null,
+        "end": null
+      },
+      "recent_errors": []
+    },
+    "ui_events.log": {
+      "file_path": "D:\\viedo_analyst\\src\\core\\logs\\ui_events.log",
+      "total_lines": 0,
+      "error_count": 0,
+      "warning_count": 0,
+      "info_count": 0,
+      "debug_count": 0,
+      "critical_count": 0,
+      "date_range": {
+        "start": null,
+        "end": null
+      },
+      "recent_errors": []
+    },
+    "video_analysis.log": {
+      "file_path": "D:\\viedo_analyst\\src\\core\\logs\\video_analysis.log",
+      "total_lines": 3,
+      "error_count": 0,
+      "warning_count": 0,
+      "info_count": 3,
+      "debug_count": 0,
+      "critical_count": 0,
+      "date_range": {
+        "start": "2025-09-19T20:57:22.174000",
+        "end": "2025-09-19T20:57:22.182000"
+      },
+      "recent_errors": []
+    },
+    "video_processing.log": {
+      "file_path": "D:\\viedo_analyst\\src\\core\\logs\\video_processing.log",
+      "total_lines": 0,
+      "error_count": 0,
+      "warning_count": 0,
+      "info_count": 0,
+      "debug_count": 0,
+      "critical_count": 0,
+      "date_range": {
+        "start": null,
+        "end": null
+      },
+      "recent_errors": []
+    }
+  }
+}

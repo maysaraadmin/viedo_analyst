@@ -187,12 +187,13 @@ class LogManager:
         }
         
         try:
-            # Rotate logs if needed
-            rotated = self.rotate_logs_if_needed()
+            # Rotate logs if needed - call directly to avoid recursion
+            from .log_rotation import log_rotation_manager
+            rotated = log_rotation_manager.rotate_logs()
             maintenance_results['rotated_files'] = rotated
             
-            # Clean up old logs
-            cleaned = self.cleanup_old_logs()
+            # Clean up old logs - call directly to avoid recursion
+            cleaned = log_rotation_manager.cleanup_old_logs()
             maintenance_results['cleaned_files'] = cleaned
             
             # Generate and export report
